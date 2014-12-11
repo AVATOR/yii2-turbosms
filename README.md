@@ -48,7 +48,8 @@ Usage
 Once the extension is installed, simply use it in your code by  :
 
 ```php
- <?php Yii::$app->turbosms->send('test', '+380XXXXXXXXX'); ?>```
+ <?php Yii::$app->turbosms->send('test', '+380XXXXXXXXX'); ?>
+ ```
 
 ## License
 
