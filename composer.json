@@ -1,0 +1,21 @@
+{
+    "name": "avat0r/yii2-turbosms",
+    "description": "Yii2 turbosms",
+    "type": "yii2-extension",
+    "keywords": ["yii2","extension","helpers","turbosms","sms"],
+    "license": "BSD-3-Clause",
+    "authors": [
+        {
+            "name": "Oleksii Golub",
+            "email": "sclub2018@yandex.ua"
+        }
+    ],
+    "require": {
+        "yiisoft/yii2": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "avat0r\\turbosms\\": ""
+        }
+    }
+}
