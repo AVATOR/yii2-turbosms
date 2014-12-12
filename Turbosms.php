@@ -17,16 +17,39 @@ use common\models\TurboSmsSent;
 class Turbosms extends Component
 {
 
+    /**
+     * @var string
+     */
     public $login;
 
+    /**
+     * @var string
+     */
     public $password;
 
+    /**
+     * @var string
+     */
     public $sender;
 
+    /**
+     * @var bool
+     */
     public $debug = true;
 
     protected $client;
 
+    /**
+     * @var string
+     */
+    protected $wsdl = 'http://turbosms.in.ua/api/wsdl.html';
+
+    /**
+     * @param $text
+     * @param $phones
+     *
+     * @throws InvalidConfigException
+     */
     public function send($text, $phones) {
 
         if (!$this->debug || !$this->client) {
@@ -58,13 +81,17 @@ class Turbosms extends Component
         }
     }
 
+    /**
+     * @return SoapClient
+     * @throws InvalidConfigException
+     */
     protected function connect() {
 
         if ($this->client) {
             return $this->client;
         }
 
-        $client = new SoapClient('http://turbosms.in.ua/api/wsdl.html');
+        $client = new SoapClient($this->wsdl);
 
         if (!$this->login || !$this->password) {
             throw new InvalidConfigException('Enter login and password from Turbosms');
@@ -76,7 +103,7 @@ class Turbosms extends Component
         ]);
 
         if ($result->AuthResult . '' != 'Вы успешно авторизировались') {
-            return false;
+            throw new InvalidConfigException($result->AuthResult);
         }
 
         $this->client = $client;
