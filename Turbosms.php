@@ -125,4 +125,24 @@ class Turbosms extends Component
         $model->save();
     }
 
+    /**
+     * Get balance
+     *
+     * @return int
+     */
+    public function getBalance() {
+        $result = $this->client->GetCreditBalance();
+        return intval($result->GetCreditBalanceResult);
+    }
+
+    /**
+     * @param $messageId
+     *
+     * @return mixed
+     */
+    public function getMessageStatus($messageId) {
+        $result = $this->client->GetMessageStatus(['MessageId' => $messageId]);
+        return $result->GetMessageStatusResult;
+    }
+
 }
