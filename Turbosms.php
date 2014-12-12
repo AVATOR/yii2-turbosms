@@ -45,6 +45,8 @@ class Turbosms extends Component
     protected $wsdl = 'http://turbosms.in.ua/api/wsdl.html';
 
     /**
+     * Send sms
+     *
      * @param $text
      * @param $phones
      *
@@ -61,23 +63,20 @@ class Turbosms extends Component
         }
         foreach ($phones as $phone) {
 
+            $message = 'Сообщения успешно отправлено';
             if (!$this->debug) {
                 $result = $this->client->SendSMS([
                     'sender' => $this->sender,
                     'destination' => $phone,
                     'text' => $text
                 ]);
+
+                if ($result->SendSMSResult->ResultArray[0] != 'Сообщения успешно отправлены') {
+                    $message = 'Сообщения не отправлено (ошибка: "' . $result->SendSMSResult->ResultArray[0] . '")';
+                }
             }
 
-            $model = new TurboSmsSent();
-            $model->text = $text;
-            $model->phone = $phone;
-            if ($this->debug || $result->SendSMSResult->ResultArray[0] == 'Сообщения успешно отправлены') {
-                $model->status = 'Сообщения успешно отправлено' . ($this->debug ? ' (тестовый режим)' : '');
-            } else {
-                $model->status = 'Сообщения не отправлено (ошибка: "' . $result->SendSMSResult->ResultArray[0] . '")';
-            }
-            $model->save();
+            $this->saveToDb($text, $phone, $message);
         }
     }
 
@@ -109,6 +108,21 @@ class Turbosms extends Component
         $this->client = $client;
 
         return $this->client;
+    }
+
+    /**
+     * Save sms to db
+     *
+     * @param $text
+     * @param $phone
+     * @param $message
+     */
+    public function saveToDb($text, $phone, $message) {
+        $model = new TurboSmsSent();
+        $model->text = $text;
+        $model->phone = $phone;
+        $model->status = $message . ($this->debug ? ' (тестовый режим)' : '');
+        $model->save();
     }
 
 }
