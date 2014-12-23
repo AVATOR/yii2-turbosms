@@ -1,6 +1,6 @@
 <?php
 
-namespace common\models;
+namespace avat0r\turbosms\models;
 
 use Yii;
 
