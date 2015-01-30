@@ -10,13 +10,13 @@ The preferred way to install this extension is through [composer](http://getcomp
 Either run
 
 ```
-php composer.phar require --prefer-dist avat0r/yii2-turbosms "*"
+php composer.phar require --prefer-dist avator/yii2-turbosms "*"
 ```
 
 or add
 
 ```
-"avat0r/yii2-turbosms": "*"
+"avator/yii2-turbosms": "*"
 ```
 
 to the require section of your `composer.json` file.
@@ -32,7 +32,7 @@ Add the following in your config:
 ...
     'components'=>array(
         'turbosms' => [
-            'class' => 'avat0r\turbosms\Turbosms',
+            'class' => 'avator\turbosms\Turbosms',
             'sender' => 'your_sender',
             'login' => 'your_login',
             'password' => 'your_password',
