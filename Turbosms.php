@@ -1,6 +1,6 @@
 <?php
 
-namespace avat0r\turbosms;
+namespace avator\turbosms;
 
 use Yii;
 use SoapClient;
