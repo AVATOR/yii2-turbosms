@@ -10,13 +10,13 @@ The preferred way to install this extension is through [composer](http://getcomp
 Either run
 
 ```
-php composer.phar require --prefer-dist avator/yii2-turbosms "*"
+php composer.phar require --prefer-dist avat0r/yii2-turbosms "*"
 ```
 
 or add
 
 ```
-"avator/yii2-turbosms": "*"
+"avat0r/yii2-turbosms": "*"
 ```
 
 to the require section of your `composer.json` file.
