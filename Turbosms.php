@@ -1,12 +1,12 @@
 <?php
 
-namespace avat0r\turbosms;
+namespace avator\turbosms;
 
 use Yii;
 use SoapClient;
 use yii\base\InvalidConfigException;
 use yii\base\Component;
-use avat0r\turbosms\models\TurboSmsSent;
+use avator\turbosms\models\TurboSmsSent;
 
 /**
  *
@@ -35,7 +35,7 @@ class Turbosms extends Component
     /**
      * @var bool
      */
-    public $debug = true;
+    public $debug = false;
 
     protected $client;
 

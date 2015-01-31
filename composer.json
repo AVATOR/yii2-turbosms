@@ -1,5 +1,5 @@
 {
-    "name": "avat0r/yii2-turbosms",
+    "name": "avator/yii2-turbosms",
     "description": "Yii2 turbosms",
     "type": "yii2-extension",
     "keywords": ["yii2","extension","helpers","turbosms","sms"],
@@ -15,7 +15,7 @@
     },
     "autoload": {
         "psr-4": {
-            "avat0r\\turbosms\\": ""
+            "avator\\turbosms\\": ""
         }
     }
 }
