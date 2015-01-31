@@ -32,7 +32,7 @@ Add the following in your config:
 ...
     'components'=>array(
         'turbosms' => [
-            'class' => 'avator\turbosms\Turbosms',
+            'class' => 'avat0r\turbosms\Turbosms',
             'sender' => 'your_sender',
             'login' => 'your_login',
             'password' => 'your_password',
