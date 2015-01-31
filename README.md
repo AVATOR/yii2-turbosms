@@ -23,6 +23,8 @@ to the require section of your `composer.json` file.
 
 ## Basic setup
 
+You should have registered account at http://turbosms.ua/
+
 ### Configuration
 
 Add the following in your config:
