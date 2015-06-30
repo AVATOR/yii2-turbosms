@@ -20,7 +20,7 @@ class TurboSmsSent extends \yii\db\ActiveRecord
      */
     public static function tableName()
     {
-        return 'turbo_sms_sent';
+        return '{{%turbo_sms_sent}}';
     }
 
     /**
