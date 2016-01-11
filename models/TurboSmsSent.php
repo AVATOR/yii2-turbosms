@@ -12,9 +12,13 @@ use Yii;
  * @property string $text
  * @property string $phone
  * @property string $status
+ * @property integer $status_code
  */
 class TurboSmsSent extends \yii\db\ActiveRecord
 {
+    const STATUS_CODE_SUCCESS = 1;
+    const STATUS_CODE_FAIL = 0;
+
     /**
      * @inheritdoc
      */
@@ -31,7 +35,8 @@ class TurboSmsSent extends \yii\db\ActiveRecord
         return [
             [['date_sent'], 'safe'],
             [['text'], 'string'],
-            [['phone', 'status'], 'string', 'max' => 255]
+            [['phone', 'status'], 'string', 'max' => 255],
+            [['status_code'], 'integer'],
         ];
     }
 
@@ -46,6 +51,7 @@ class TurboSmsSent extends \yii\db\ActiveRecord
             'text' => Yii::t('app', 'Text'),
             'phone' => Yii::t('app', 'Phone'),
             'status' => Yii::t('app', 'Status'),
+            'status_code' => Yii::t('app', 'Status Code'),
         ];
     }
 }
