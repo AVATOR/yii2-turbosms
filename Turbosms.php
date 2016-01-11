@@ -64,6 +64,8 @@ class Turbosms extends Component
         foreach ($phones as $phone) {
 
             $message = 'Сообщения успешно отправлено';
+            $statusCode = TurboSmsSent::STATUS_CODE_SUCCESS;
+
             if (!$this->debug) {
                 $result = $this->client->SendSMS([
                     'sender' => $this->sender,
@@ -73,10 +75,11 @@ class Turbosms extends Component
 
                 if ($result->SendSMSResult->ResultArray[0] != 'Сообщения успешно отправлены') {
                     $message = 'Сообщения не отправлено (ошибка: "' . $result->SendSMSResult->ResultArray[0] . '")';
+                    $statusCode = TurboSmsSent::STATUS_CODE_FAIL;
                 }
             }
 
-            $this->saveToDb($text, $phone, $message);
+            $this->saveToDb($text, $phone, $message, $statusCode);
         }
     }
 
@@ -116,13 +119,17 @@ class Turbosms extends Component
      * @param $text
      * @param $phone
      * @param $message
+     * @param $statusCode
+     *
+     * @return boolean
      */
-    public function saveToDb($text, $phone, $message) {
+    public function saveToDb($text, $phone, $message, $statusCode) {
         $model = new TurboSmsSent();
         $model->text = $text;
         $model->phone = $phone;
         $model->status = $message . ($this->debug ? ' (тестовый режим)' : '');
-        $model->save();
+        $model->status_code = $statusCode;
+        return $model->save();
     }
 
     /**
