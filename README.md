@@ -82,7 +82,6 @@ Once the extension is installed, simply use it in your code by  :
 TODO
 -----
 * Translate message
-* Down migration
 * Save log to file
 
 ## License

@@ -24,8 +24,6 @@ class m141211_142603_create_table extends Migration
 
     public function down()
     {
-        echo "m141211_142603_create_table cannot be reverted.\n";
-
-        return false;
+        $this->dropTable('{{%turbo_sms_sent}}');
     }
 }
