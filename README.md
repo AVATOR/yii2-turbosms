@@ -1,6 +1,6 @@
 Yii2 turbosms
 =============
-Yii2 turbosms
+Yii2 send sms from Turbosms.ua by SOAP
 
 Installation
 ------------
