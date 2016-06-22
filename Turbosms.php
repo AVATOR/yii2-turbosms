@@ -72,26 +72,34 @@ class Turbosms extends Component
      * @var int
      */
     protected $sendStatus = 1;
-    /**
-     * Send sms
-     *
-     * @param string $text
-     * @param $phones
-     *
-     * @throws InvalidConfigException
-     */
+	/**
+	 * Send sms and return array of message's ids in database
+	 *
+	 * @param string $text
+	 * @param $phones
+	 *
+	 * @return array
+	 *
+	 * @throws InvalidConfigException
+	 */
     public function send($text, $phones)
     {
         if (!is_array($phones)) {
             $phones = [$phones];
         }
+
+	    $idList = [];
         foreach ($phones as $phone) {
             if (!$phone) {
                 continue;
             }
             $result = $this->sendMessage($text, $phone);
-            $this->saveToDb($text, $phone, $result);
+
+	        if( ($id = $this->saveToDb($text, $phone, $result) ) != false )
+		        $idList[] = $id;
+
         }
+	    return $idList;
     }
     /**
      * Connetc to Turbosms by Soap
@@ -139,7 +147,7 @@ class Turbosms extends Component
 	    if(isset($result['message_id'])) $model->message_id = $result['message_id'];
         $model->status = $this->sendStatus;
         $model->save();
-        return true;
+        return $model->id;
     }
     /**
      * Get balance
@@ -181,7 +189,7 @@ class Turbosms extends Component
     /**
      * @param $text
      * @param $phone
-     * @return string
+     * @return array
      */
     protected function sendMessage($text, $phone)
     {
