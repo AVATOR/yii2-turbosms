@@ -1,13 +1,10 @@
 <?php
-
 namespace avator\turbosms;
-
 use Yii;
 use SoapClient;
 use yii\base\InvalidConfigException;
 use yii\base\Component;
 use avator\turbosms\models\TurboSmsSent;
-
 /**
  *
  * @author AVATOR (Oleksii Golub) <sclub2018@yandex.ua>
@@ -15,78 +12,66 @@ use avator\turbosms\models\TurboSmsSent;
  */
 class Turbosms extends Component
 {
-
     /**
      * Soap login
      *
      * @var string
      */
     public $login;
-
     /**
      * Soap password
      *
      * @var string
      */
     public $password;
-
     /**
      * @var string
      */
     public $sender;
-
     /**
      * Debug mode
      *
      * @var bool
      */
     public $debug = false;
-
     /**
      * @var SoapClient
      */
     protected $client;
-
     /**
      * Wsdl url
      *
      * @var string
      */
     protected $wsdl = 'http://turbosms.in.ua/api/wsdl.html';
-
     /**
      * Debug suffix message
      *
      * @var string
      */
     public $debugSuffixMessage = ' (тестовый режим)';
-
     /**
      * Success message
      *
      * @var string
      */
     public $successMessage = 'Сообщения успешно отправлено';
-
     /**
      * Error message
      *
      * @var string
      */
     public $errorMessage = 'Сообщения не отправлено (ошибка: "%error%")';
-
     /**
      * Save to db log
      *
      * @var bool
      */
     public $saveToDb = true;
-
     /**
      * @var int
      */
     protected $sendStatus = 1;
-
     /**
      * Send sms
      *
@@ -104,11 +89,10 @@ class Turbosms extends Component
             if (!$phone) {
                 continue;
             }
-            $message = $this->sendMessage($text, $phone);
-            $this->saveToDb($text, $phone, $message);
+            $result = $this->sendMessage($text, $phone);
+            $this->saveToDb($text, $phone, $result);
         }
     }
-
     /**
      * Connetc to Turbosms by Soap
      *
@@ -117,56 +101,46 @@ class Turbosms extends Component
      */
     protected function connect()
     {
-
         if ($this->client) {
             return $this->client;
         }
-
         $client = new SoapClient($this->wsdl);
-
         if (!$this->login || !$this->password) {
             throw new InvalidConfigException('Enter login and password from Turbosms');
         }
-
         $result = $client->Auth([
             'login' => $this->login,
             'password' => $this->password,
         ]);
-
         if ($result->AuthResult . '' != 'Вы успешно авторизировались') {
             throw new InvalidConfigException($result->AuthResult);
         }
-
         $this->client = $client;
-
         return $this->client;
     }
-
     /**
      * Save sms to db
      *
      * @param string $text
      * @param string $phone
-     * @param string $message
+     * @param string $result
      *
      * @return bool
      */
-    public function saveToDb($text, $phone, $message)
+    public function saveToDb($text, $phone, $result)
     {
         if (!$this->saveToDb) {
             return false;
         }
-
         $model = new TurboSmsSent();
         $model->text = $text;
         $model->phone = $phone;
-        $model->message = $message . ($this->debug ? $this->debugSuffixMessage : '');
+        $model->message = $result['message'] . ($this->debug ? $this->debugSuffixMessage : '');
+	    if(isset($result['message_id'])) $model->message_id = $result['message_id'];
         $model->status = $this->sendStatus;
         $model->save();
-
         return true;
     }
-
     /**
      * Get balance
      *
@@ -176,7 +150,6 @@ class Turbosms extends Component
     {
         return $this->debug ? 0 : intval($this->getClient()->GetCreditBalance()->GetCreditBalanceResult);
     }
-
     /**
      * Get message status
      *
@@ -192,7 +165,6 @@ class Turbosms extends Component
         $result = $this->getClient()->GetMessageStatus(['MessageId' => $messageId]);
         return $result->GetMessageStatusResult;
     }
-
     /**
      * Get Soap client
      *
@@ -206,7 +178,6 @@ class Turbosms extends Component
         }
         return $this->client;
     }
-
     /**
      * @param $text
      * @param $phone
@@ -214,26 +185,28 @@ class Turbosms extends Component
      */
     protected function sendMessage($text, $phone)
     {
-        $message = $this->successMessage;
+	    $return = [
+		    'message' => $this->successMessage
+	    ];
         // set default status
         $this->sendStatus = 1;
         if ($this->debug) {
-            return $message;
+            return $return;
         }
-
         $result = $this->getClient()->SendSMS([
             'sender' => $this->sender,
             'destination' => $phone,
             'text' => $text
         ]);
 
+	    if(isset($result->SendSMSResult->ResultArray[1]))
+		    $return['message_id'] = $result->SendSMSResult->ResultArray[1];
+
         if (empty($result->SendSMSResult->ResultArray[0]) ||
             $result->SendSMSResult->ResultArray[0] != 'Сообщения успешно отправлены') {
             $this->sendStatus = 0;
-            $message = preg_replace('/%error%/i', $result->SendSMSResult->ResultArray, $this->errorMessage);
+	        $return['message'] = preg_replace('/%error%/i', $result->SendSMSResult->ResultArray, $this->errorMessage);
         }
-
-        return $message;
+        return $return;
     }
-
 }
