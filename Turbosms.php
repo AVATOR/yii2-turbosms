@@ -1,10 +1,12 @@
 <?php
 namespace avator\turbosms;
+
 use Yii;
 use SoapClient;
 use yii\base\InvalidConfigException;
 use yii\base\Component;
 use avator\turbosms\models\TurboSmsSent;
+
 /**
  *
  * @author AVATOR (Oleksii Golub) <sclub2018@yandex.ua>
@@ -18,44 +20,52 @@ class Turbosms extends Component
      * @var string
      */
     public $login;
+
     /**
      * Soap password
      *
      * @var string
      */
     public $password;
+
     /**
      * @var string
      */
     public $sender;
+
     /**
      * Debug mode
      *
      * @var bool
      */
     public $debug = false;
+
     /**
      * @var SoapClient
      */
     protected $client;
+
     /**
      * Wsdl url
      *
      * @var string
      */
     protected $wsdl = 'http://turbosms.in.ua/api/wsdl.html';
+
     /**
      * Debug suffix message
      *
      * @var string
      */
     public $debugSuffixMessage = ' (тестовый режим)';
+
     /**
      * Success message
      *
      * @var string
      */
     public $successMessage = 'Сообщения успешно отправлено';
+
     /**
      * Error message
      *
@@ -68,39 +78,49 @@ class Turbosms extends Component
      * @var bool
      */
     public $saveToDb = true;
+
     /**
      * @var int
      */
     protected $sendStatus = 1;
-	/**
-	 * Send sms and return array of message's ids in database
-	 *
-	 * @param string $text
-	 * @param $phones
-	 *
-	 * @return array
-	 *
-	 * @throws InvalidConfigException
-	 */
+
+    /**
+     * @var string
+     */
+    protected $lastSendMessageId = '';
+
+    /**
+     * @var array
+     */
+    protected $lastSendMessagesIds = [];
+
+    /**
+     * Send sms and return array of message's ids in database
+     *
+     * @param string $text
+     * @param $phones
+     *
+     * @return array
+     *
+     * @throws InvalidConfigException
+     */
     public function send($text, $phones)
     {
         if (!is_array($phones)) {
             $phones = [$phones];
         }
 
-	    $idList = [];
         foreach ($phones as $phone) {
             if (!$phone) {
                 continue;
             }
-            $result = $this->sendMessage($text, $phone);
-
-	        if( ($id = $this->saveToDb($text, $phone, $result) ) != false )
-		        $idList[] = $id;
-
+            $message = $this->sendMessage($text, $phone);
+            $this->saveToDb($text, $phone, $message);
         }
-	    return $idList;
+
+        return $this->lastSendMessagesIds;
     }
+
     /**
      * Connetc to Turbosms by Soap
      *
@@ -112,10 +132,12 @@ class Turbosms extends Component
         if ($this->client) {
             return $this->client;
         }
+
         $client = new SoapClient($this->wsdl);
         if (!$this->login || !$this->password) {
             throw new InvalidConfigException('Enter login and password from Turbosms');
         }
+
         $result = $client->Auth([
             'login' => $this->login,
             'password' => $this->password,
@@ -124,18 +146,20 @@ class Turbosms extends Component
             throw new InvalidConfigException($result->AuthResult);
         }
         $this->client = $client;
+
         return $this->client;
     }
+
     /**
      * Save sms to db
      *
      * @param string $text
      * @param string $phone
-     * @param string $result
+     * @param string $message
      *
      * @return bool
      */
-    public function saveToDb($text, $phone, $result)
+    public function saveToDb($text, $phone, $message)
     {
         if (!$this->saveToDb) {
             return false;
@@ -143,12 +167,20 @@ class Turbosms extends Component
         $model = new TurboSmsSent();
         $model->text = $text;
         $model->phone = $phone;
-        $model->message = $result['message'] . ($this->debug ? $this->debugSuffixMessage : '');
-	    if(isset($result['message_id'])) $model->message_id = $result['message_id'];
+        $model->message = $message . ($this->debug ? $this->debugSuffixMessage : '');
+        if ($this->lastSendMessageId) {
+            $model->message_id = $this->lastSendMessageId;
+        }
         $model->status = $this->sendStatus;
         $model->save();
-        return $model->id;
+
+        if ((int)$model->id) {
+            $this->lastSendMessagesIds[$model->id] = $this->lastSendMessageId;
+        }
+
+        return true;
     }
+
     /**
      * Get balance
      *
@@ -158,6 +190,7 @@ class Turbosms extends Component
     {
         return $this->debug ? 0 : intval($this->getClient()->GetCreditBalance()->GetCreditBalanceResult);
     }
+
     /**
      * Get message status
      *
@@ -168,11 +201,13 @@ class Turbosms extends Component
     public function getMessageStatus($messageId)
     {
         if ($this->debug || !$messageId) {
-            return'';
+            return '';
         }
         $result = $this->getClient()->GetMessageStatus(['MessageId' => $messageId]);
+
         return $result->GetMessageStatusResult;
     }
+
     /**
      * Get Soap client
      *
@@ -184,8 +219,10 @@ class Turbosms extends Component
         if (!$this->client) {
             return $this->connect();
         }
+
         return $this->client;
     }
+
     /**
      * @param $text
      * @param $phone
@@ -193,28 +230,32 @@ class Turbosms extends Component
      */
     protected function sendMessage($text, $phone)
     {
-	    $return = [
-		    'message' => $this->successMessage
-	    ];
+        $message = $this->successMessage;
         // set default status
         $this->sendStatus = 1;
+        // clear variable
+        $this->lastSendMessageId = '';
         if ($this->debug) {
-            return $return;
+            return $message;
         }
+
         $result = $this->getClient()->SendSMS([
             'sender' => $this->sender,
             'destination' => $phone,
             'text' => $text
         ]);
 
-	    if(isset($result->SendSMSResult->ResultArray[1]))
-		    $return['message_id'] = $result->SendSMSResult->ResultArray[1];
+        if (!empty($result->SendSMSResult->ResultArray[1])) {
+            $this->lastSendMessageId = $result->SendSMSResult->ResultArray[1];
+        }
 
         if (empty($result->SendSMSResult->ResultArray[0]) ||
-            $result->SendSMSResult->ResultArray[0] != 'Сообщения успешно отправлены') {
+            $result->SendSMSResult->ResultArray[0] != 'Сообщения успешно отправлены'
+        ) {
             $this->sendStatus = 0;
-	        $return['message'] = preg_replace('/%error%/i', $result->SendSMSResult->ResultArray, $this->errorMessage);
+            $message = preg_replace('/%error%/i', $result->SendSMSResult->ResultArray, $this->errorMessage);
         }
-        return $return;
+
+        return $message;
     }
 }

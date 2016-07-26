@@ -36,7 +36,7 @@ class TurboSmsSent extends \yii\db\ActiveRecord
         return [
             [['date_sent'], 'safe'],
             [['text'], 'string'],
-            [['phone', 'status'], 'integer'],
+            [['status'], 'integer'],
             [['phone', 'message', 'message_id'], 'string', 'max' => 255],
         ];
     }
