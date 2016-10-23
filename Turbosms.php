@@ -245,7 +245,7 @@ class Turbosms extends Component
             'text' => $text
         ]);
 
-        if (!empty($result->SendSMSResult->ResultArray[1])) {
+        if (is_array($result->SendSMSResult->ResultArray) && !empty($result->SendSMSResult->ResultArray[1])) {
             $this->lastSendMessageId = $result->SendSMSResult->ResultArray[1];
         }
 
