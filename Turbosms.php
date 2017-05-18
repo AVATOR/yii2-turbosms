@@ -9,7 +9,7 @@ use avator\turbosms\models\TurboSmsSent;
 
 /**
  *
- * @author AVATOR (Oleksii Golub) <sclub2018@yandex.ua>
+ * @author AVATOR (Oleksii Golub) <oleksii.v.golub@gmail.com>
  * @since 1.0
  */
 class Turbosms extends Component
@@ -72,6 +72,7 @@ class Turbosms extends Component
      * @var string
      */
     public $errorMessage = 'Сообщения не отправлено (ошибка: "%error%")';
+    
     /**
      * Save to db log
      *
@@ -122,7 +123,7 @@ class Turbosms extends Component
     }
 
     /**
-     * Connetc to Turbosms by Soap
+     * Connect to Turbosms by Soap
      *
      * @return SoapClient
      * @throws InvalidConfigException
