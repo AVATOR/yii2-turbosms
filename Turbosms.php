@@ -254,7 +254,7 @@ class Turbosms extends Component
             $result->SendSMSResult->ResultArray[0] != 'Сообщения успешно отправлены'
         ) {
             $this->sendStatus = 0;
-            $message = preg_replace('/%error%/i', $result->SendSMSResult->ResultArray, $this->errorMessage);
+            $message = preg_replace('/%error%/i', $result->SendSMSResult->ResultArray[0], $this->errorMessage);
         }
 
         return $message;
