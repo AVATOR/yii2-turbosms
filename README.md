@@ -2,6 +2,11 @@ Yii2 turbosms
 =============
 Yii2 send sms from Turbosms.ua by SOAP
 
+Requirements
+------------
+* PHP >=5.4.0
+* Install and Enable `extension=php_soap.dll` in your `php.ini` file
+
 Installation
 ------------
 
